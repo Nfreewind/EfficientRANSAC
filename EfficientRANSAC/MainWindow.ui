@@ -36,12 +36,12 @@
     <property name="title">
      <string>Tool</string>
     </property>
-    <addaction name="actionDetectContours"/>
-    <addaction name="separator"/>
     <addaction name="actionDetectCurves"/>
     <addaction name="actionDetectLines"/>
     <addaction name="separator"/>
     <addaction name="actionDetectCurvesLines"/>
+    <addaction name="separator"/>
+    <addaction name="actionGenerateContours"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuTool"/>
@@ -99,6 +99,11 @@
    </property>
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actionGenerateContours">
+   <property name="text">
+    <string>Generate Contours</string>
    </property>
   </action>
  </widget>

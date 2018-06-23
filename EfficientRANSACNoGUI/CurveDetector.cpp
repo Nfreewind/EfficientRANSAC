@@ -1,7 +1,7 @@
 #include "CurveDetector.h"
 #include <iostream>
 
-void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius, std::vector<Circle>& circles) {
+void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius, std::vector<std::shared_ptr<PrimitiveShape>>& circles) {
 	circles.clear();
 
 	int N = polygon.size();
@@ -18,7 +18,7 @@ void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_po
 
 	while (true) {
 		int max_num_points = 0;
-		Circle best_circle;
+		std::shared_ptr<Circle> best_circle;
 		int best_index1;
 
 		for (int iter = 0; iter < num_iter; iter++) {
@@ -41,37 +41,40 @@ void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_po
 			if (std::abs(crossProduct(polygon[index2].pos - polygon[index1].pos, polygon[index3].pos - polygon[index1].pos)) < 0.001) continue;
 
 			// calculate the circle center from three points
-			Circle circle = circleFromPoints(polygon[index1].pos, polygon[index2].pos, polygon[index3].pos);
-			if (circle.radius < min_radius || circle.radius > max_radius) continue;
+			std::shared_ptr<Circle> circle = circleFromPoints(polygon[index1].pos, polygon[index2].pos, polygon[index3].pos);
+			if (circle->radius < min_radius || circle->radius > max_radius) continue;
 
 			// check whether the points are supporting this circle
 			std::vector<float> angles;
-			angles.push_back(std::atan2(polygon[index1].pos.y - circle.center.y, polygon[index1].pos.x - circle.center.x));
+			angles.push_back(std::atan2(polygon[index1].pos.y - circle->center.y, polygon[index1].pos.x - circle->center.x));
 			int num_points = 0;
 			int prev = 0;
+			circle->start_index = std::numeric_limits<int>::max();
 			for (int i = 0; i < N && i - prev < cluster_epsilon; i++) {
 				int idx = (index1 + i) % N;
 				if (polygon[idx].used) break;
-				if (circle.distance(polygon[idx].pos) < circle.radius * max_error_ratio_to_radius) {
+				if (circle->distance(polygon[idx].pos) < circle->radius * max_error_ratio_to_radius) {
 					num_points++;
 					prev = i;
-					angles.push_back(std::atan2(polygon[idx].pos.y - circle.center.y, polygon[idx].pos.x - circle.center.x));
+					angles.push_back(std::atan2(polygon[idx].pos.y - circle->center.y, polygon[idx].pos.x - circle->center.x));
+					circle->start_index = std::min(circle->start_index, idx);
 				}
 			}
 			prev = 0;
 			for (int i = 1; i < N && i - prev < cluster_epsilon; i++) {
 				int idx = (index1 - i + N) % N;
 				if (polygon[idx].used) break;
-				if (circle.distance(polygon[idx].pos) < circle.radius * max_error_ratio_to_radius) {
+				if (circle->distance(polygon[idx].pos) < circle->radius * max_error_ratio_to_radius) {
 					num_points++;
 					prev = i;
-					angles.push_back(std::atan2(polygon[idx].pos.y - circle.center.y, polygon[idx].pos.x - circle.center.x));
+					angles.push_back(std::atan2(polygon[idx].pos.y - circle->center.y, polygon[idx].pos.x - circle->center.x));
+					circle->start_index = std::min(circle->start_index, idx);
 				}
 			}
 
 			// calculate angle range
-			circle.setMinMaxAngles(angles);
-			if (circle.angle_range < min_angle) continue;
+			circle->setMinMaxAngles(angles);
+			if (circle->angle_range < min_angle) continue;
 
 			if (num_points > max_num_points) {
 				max_num_points = num_points;
@@ -90,8 +93,8 @@ void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_po
 			int idx = (best_index1 + i) % N;
 			if (polygon[idx].used) break;
 			potentially_used.push_back(idx);
-			if (best_circle.distance(polygon[idx].pos) < best_circle.radius * max_error_ratio_to_radius) {
-				best_circle.points.push_back(polygon[idx].pos);
+			if (best_circle->distance(polygon[idx].pos) < best_circle->radius * max_error_ratio_to_radius) {
+				best_circle->points.push_back(polygon[idx].pos);
 				prev = i;
 				for (auto& pu : potentially_used) polygon[pu].used = true;
 			}
@@ -102,8 +105,8 @@ void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_po
 			int idx = (best_index1 - i + N) % N;
 			if (polygon[idx].used) break;
 			potentially_used.push_back(idx);
-			if (best_circle.distance(polygon[idx].pos) < best_circle.radius * max_error_ratio_to_radius) {
-				best_circle.points.push_back(polygon[idx].pos);
+			if (best_circle->distance(polygon[idx].pos) < best_circle->radius * max_error_ratio_to_radius) {
+				best_circle->points.push_back(polygon[idx].pos);
 				prev = i;
 				for (auto& pu : potentially_used) polygon[pu].used = true;
 			}
@@ -118,7 +121,7 @@ void CurveDetector::detect(std::vector<Point>& polygon, int num_iter, int min_po
 	}
 }
 
-Circle CurveDetector::circleFromPoints(const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& p3) {
+std::shared_ptr<Circle> CurveDetector::circleFromPoints(const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& p3) {
 	float offset = p2.x * p2.x + p2.y * p2.y;
 	float bc = (p1.x * p1.x + p1.y * p1.y - offset) / 2.0;
 	float cd = (offset - p3.x * p3.x - p3.y * p3.y) / 2.0;
@@ -132,7 +135,7 @@ Circle CurveDetector::circleFromPoints(const cv::Point2f& p1, const cv::Point2f&
 	float centery = (cd * (p1.x - p2.x) - bc * (p2.x - p3.x)) * idet;
 	float radius = std::sqrt((p2.x - centerx) * (p2.x - centerx) + (p2.y - centery) * (p2.y - centery));
 	
-	return Circle(cv::Point2f(centerx, centery), radius);
+	return std::shared_ptr<Circle>(new Circle(cv::Point2f(centerx, centery), radius));
 }
 
 float CurveDetector::crossProduct(const cv::Point2f& a, const cv::Point2f& b) {

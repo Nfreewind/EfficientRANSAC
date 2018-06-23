@@ -63,6 +63,9 @@
     <ClCompile Include="..\EfficientRANSACNoGUI\OrientationEstimator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\EfficientRANSACNoGUI\PrimitiveShape.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="MainWindow.h">
@@ -101,20 +104,23 @@
     <ClInclude Include="Canvas.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\EfficientRANSACNoGUI\CurveDetector.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="..\EfficientRANSACNoGUI\PrimitiveShape.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\EfficientRANSACNoGUI\LineDetector.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\EfficientRANSACNoGUI\MeanShift.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\EfficientRANSACNoGUI\Util.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="..\EfficientRANSACNoGUI\CurveDetector.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\EfficientRANSACNoGUI\OrientationEstimator.h">
-      <Filter>Source Files</Filter>
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\EfficientRANSACNoGUI\MeanShift.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\EfficientRANSACNoGUI\Util.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

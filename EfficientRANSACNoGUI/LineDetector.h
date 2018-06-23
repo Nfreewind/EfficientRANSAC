@@ -1,20 +1,31 @@
 #pragma once
 
 #include <vector>
+#include "PrimitiveShape.h"
 #include "Util.h"
+#include <memory>
 
-class Line {
+class Line : public PrimitiveShape {
 public:
+	/** One point on the line */
 	cv::Point2f point;
+
+	/** Orientation vector of the line */
 	cv::Point2f dir;
-	std::vector<cv::Point2f> points;
+
+	/** Start position of the line segment */
 	float start_pos;
+
+	/** End position of the line segment */
 	float end_pos;
+
+	/** Length of the line segment */
 	float length;
 
 public:
 	Line() {}
 	Line(const cv::Point2f& point, const cv::Point2f& dir) : point(point), dir(dir / cv::norm(dir)) {}
+	~Line() {}
 
 	float distance(const cv::Point2f& p) {
 		return std::abs((p - point).dot(cv::Point2f(dir.y, -dir.x)));
@@ -36,6 +47,6 @@ protected:
 	LineDetector() {}
 
 public:
-	static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, std::vector<Line>& lines);
+	static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, std::vector<std::shared_ptr<PrimitiveShape>>& lines);
 };
 

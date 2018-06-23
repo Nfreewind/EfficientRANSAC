@@ -1,20 +1,31 @@
 #pragma once
 
 #include <vector>
+#include "PrimitiveShape.h"
 #include "Util.h"
+#include <memory>
 
-class Circle {
+class Circle : public PrimitiveShape {
 public:
+	/** Center of the circle */
 	cv::Point2f center;
+
+	/** Radius of the circle */
 	float radius;
-	std::vector<cv::Point2f> points;
+
+	/** Start angle */
 	float start_angle;
+
+	/** End angle */
 	float end_angle;
+
+	/** Angle range */
 	float angle_range;
 
 public:
 	Circle() : center(0, 0), radius(0) {}
 	Circle(const cv::Point2f& center, float radius) : center(center), radius(radius) {}
+	~Circle() {}
 
 	float distance(const cv::Point2f& p) {
 		return std::abs(cv::norm(p - center) - radius);
@@ -57,10 +68,10 @@ public:
 class CurveDetector {
 protected:
 	CurveDetector() {}
-
+	
 public:
-	static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius, std::vector<Circle>& circles);
-	static Circle circleFromPoints(const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& p3);
+	static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius, std::vector<std::shared_ptr<PrimitiveShape>>& circles);
+	static std::shared_ptr<Circle> circleFromPoints(const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& p3);
 	static float crossProduct(const cv::Point2f& a, const cv::Point2f& b);
 };
 

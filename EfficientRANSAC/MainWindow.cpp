@@ -16,10 +16,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	connect(ui.actionOpen, SIGNAL(triggered()), this, SLOT(onOpen()));
 	connect(ui.actionSave, SIGNAL(triggered()), this, SLOT(onSave()));
 	connect(ui.actionExit, SIGNAL(triggered()), this, SLOT(close()));
-	connect(ui.actionDetectContours, SIGNAL(triggered()), this, SLOT(onDetectContours()));
 	connect(ui.actionDetectCurves, SIGNAL(triggered()), this, SLOT(onDetectCurves()));
 	connect(ui.actionDetectLines, SIGNAL(triggered()), this, SLOT(onDetectLines()));
 	connect(ui.actionDetectCurvesLines, SIGNAL(triggered()), this, SLOT(onDetectCurvesLines()));
+	connect(ui.actionGenerateContours, SIGNAL(triggered()), this, SLOT(onGenerateContours()));
 }
 
 void MainWindow::onOpen() {
@@ -37,11 +37,6 @@ void MainWindow::onSave() {
 	if (filename.isEmpty()) return;
 
 	canvas.saveImage(filename);
-	canvas.update();
-}
-
-void MainWindow::onDetectContours() {
-	canvas.detectContours();
 	canvas.update();
 }
 
@@ -67,4 +62,9 @@ void MainWindow::onDetectCurvesLines() {
 		canvas.detectCurvesLines(dlg.getCurveNumIterations(), dlg.getCurveMinPoints(), dlg.getCurveMaxErrorRatioToRadius(), dlg.getCurveClusterEpsilon(), dlg.getCurveMinAngle() / 180.0 * CV_PI, dlg.getCurveMinRadius(), dlg.getCurveMaxRadius(), dlg.getLineNumIterations(), dlg.getLineMinPoints(), dlg.getLineMaxError(), dlg.getLineClusterEpsilon(), dlg.getLineMinLength(), dlg.getAngleThreshold() / 180.0 * CV_PI);
 		canvas.update();
 	}
+}
+
+void MainWindow::onGenerateContours() {
+	canvas.generateContours();
+	canvas.update();
 }

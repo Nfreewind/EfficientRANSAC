@@ -127,12 +127,14 @@
     <ClCompile Include="LineDetector.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MeanShift.cpp" />
+    <ClCompile Include="PrimitiveShape.cpp" />
     <ClCompile Include="Util.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CurveDetector.h" />
     <ClInclude Include="LineDetector.h" />
     <ClInclude Include="MeanShift.h" />
+    <ClInclude Include="PrimitiveShape.h" />
     <ClInclude Include="Util.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

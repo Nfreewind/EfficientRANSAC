@@ -1,5 +1,6 @@
 #include <iostream>
 #include "CurveDetector.h"
+#include "PrimitiveShape.h"
 
 int main(int argc, char *argv[]) {
 	if (argc != 3) {
@@ -14,16 +15,16 @@ int main(int argc, char *argv[]) {
 	std::vector<Polygon> polygons = findContours(image);
 
 	// detect circles
-	std::vector<Circle> circles;
+	std::vector<std::vector<std::shared_ptr<PrimitiveShape>>> shapes;
 	for (int i = 0; i < polygons.size(); i++) {
-		if (polygons[i].contour.size() < 100) continue;
-
-		std::vector<Circle> results;
-		CurveDetector::detect(polygons[i].contour, 200000, 200, 0.02, 30, 90 / 180.0 * CV_PI, 80, 400, results);
-		circles.insert(circles.end(), results.begin(), results.end());
+		std::vector<std::shared_ptr<PrimitiveShape>> results;
+		if (polygons[i].contour.size() >= 100) {
+			CurveDetector::detect(polygons[i].contour, 200000, 200, 0.02, 30, 90 / 180.0 * CV_PI, 80, 400, results);
+		}
+		shapes.push_back(results);
 	}
 
-	if (circles.size() > 0) {
+	if (shapes.size() > 0) {
 		// generate output image
 		cv::Mat result(image.size(), CV_8UC3, cv::Scalar(255, 255, 255));
 		for (auto& polygon : polygons) {
@@ -36,8 +37,12 @@ int main(int argc, char *argv[]) {
 				cv::polylines(result, pol, true, cv::Scalar(0, 0, 0), 1);
 			}
 		}
-		for (auto& circle : circles) {
-			cv::ellipse(result, cv::Point(circle.center.x, circle.center.y), cv::Size(circle.radius, circle.radius), 0, circle.start_angle / CV_PI * 180, circle.end_angle / CV_PI * 180, cv::Scalar(255, 0, 0), 3);
+		for (auto& list : shapes) {
+			for (auto& shape : list) {
+				if (Circle* circle = dynamic_cast<Circle*>(shape.get())) {
+					cv::ellipse(result, cv::Point(circle->center.x, circle->center.y), cv::Size(circle->radius, circle->radius), 0, circle->start_angle / CV_PI * 180, circle->end_angle / CV_PI * 180, cv::Scalar(255, 0, 0), 3);
+				}
+			}
 		}
 
 		cv::imwrite(argv[2], result);

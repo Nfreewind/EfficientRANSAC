@@ -33,6 +33,7 @@ public:
     QAction *actionDetectLines;
     QAction *actionDetectCurvesLines;
     QAction *actionSave;
+    QAction *actionGenerateContours;
     QWidget *centralWidget;
     QMenuBar *menuBar;
     QMenu *menuFile;
@@ -65,6 +66,8 @@ public:
         QIcon icon1;
         icon1.addFile(QStringLiteral("Resources/save.png"), QSize(), QIcon::Normal, QIcon::Off);
         actionSave->setIcon(icon1);
+        actionGenerateContours = new QAction(MainWindowClass);
+        actionGenerateContours->setObjectName(QStringLiteral("actionGenerateContours"));
         centralWidget = new QWidget(MainWindowClass);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
         MainWindowClass->setCentralWidget(centralWidget);
@@ -89,12 +92,12 @@ public:
         menuFile->addAction(actionSave);
         menuFile->addSeparator();
         menuFile->addAction(actionExit);
-        menuTool->addAction(actionDetectContours);
-        menuTool->addSeparator();
         menuTool->addAction(actionDetectCurves);
         menuTool->addAction(actionDetectLines);
         menuTool->addSeparator();
         menuTool->addAction(actionDetectCurvesLines);
+        menuTool->addSeparator();
+        menuTool->addAction(actionGenerateContours);
 
         retranslateUi(MainWindowClass);
 
@@ -112,6 +115,7 @@ public:
         actionDetectLines->setText(QApplication::translate("MainWindowClass", "Detect Lines", Q_NULLPTR));
         actionDetectCurvesLines->setText(QApplication::translate("MainWindowClass", "Detect Curves/Lines", Q_NULLPTR));
         actionSave->setText(QApplication::translate("MainWindowClass", "Save", Q_NULLPTR));
+        actionGenerateContours->setText(QApplication::translate("MainWindowClass", "Generate Contours", Q_NULLPTR));
         menuFile->setTitle(QApplication::translate("MainWindowClass", "File", Q_NULLPTR));
         menuTool->setTitle(QApplication::translate("MainWindowClass", "Tool", Q_NULLPTR));
     } // retranslateUi

@@ -116,6 +116,7 @@
     <ClCompile Include="..\EfficientRANSACNoGUI\LineDetector.cpp" />
     <ClCompile Include="..\EfficientRANSACNoGUI\MeanShift.cpp" />
     <ClCompile Include="..\EfficientRANSACNoGUI\OrientationEstimator.cpp" />
+    <ClCompile Include="..\EfficientRANSACNoGUI\PrimitiveShape.cpp" />
     <ClCompile Include="..\EfficientRANSACNoGUI\Util.cpp" />
     <ClCompile Include="Canvas.cpp" />
     <ClCompile Include="CurveLineOptionDialog.cpp" />
@@ -141,6 +142,7 @@
     <ClInclude Include="..\EfficientRANSACNoGUI\LineDetector.h" />
     <ClInclude Include="..\EfficientRANSACNoGUI\MeanShift.h" />
     <ClInclude Include="..\EfficientRANSACNoGUI\OrientationEstimator.h" />
+    <ClInclude Include="..\EfficientRANSACNoGUI\PrimitiveShape.h" />
     <ClInclude Include="..\EfficientRANSACNoGUI\Util.h" />
     <ClInclude Include="Canvas.h" />
     <QtMoc Include="CurveLineOptionDialog.h">
