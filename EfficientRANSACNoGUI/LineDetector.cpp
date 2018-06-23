@@ -1,7 +1,17 @@
 #include "LineDetector.h"
 #include "MeanShift.h"
 
-void LineDetector::detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, std::vector<std::shared_ptr<PrimitiveShape>>& lines) {
+Line::Line() {
+}
+
+Line::Line(int index, const cv::Point2f& point, const cv::Point2f& dir) : point(point), dir(dir / cv::norm(dir)) {
+	start_index = index;
+	start_point = point;
+	end_index = index;
+	end_point = point;
+}
+
+void LineDetector::detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>& lines) {
 	lines.clear();
 
 	int N = polygon.size();
@@ -44,7 +54,7 @@ void LineDetector::detect(std::vector<Point>& polygon, int num_iter, int min_poi
 			if (index1 == -1 || index2 == -1) continue;
 
 			// calculate the direction
-			std::shared_ptr<Line> line = std::shared_ptr<Line>(new Line(polygon[index1].pos, polygon[index2].pos - polygon[index1].pos));
+			std::shared_ptr<Line> line = std::shared_ptr<Line>(new Line(index1, polygon[index1].pos, polygon[index2].pos - polygon[index1].pos));
 
 			// cancel this proposal if the normal is too different
 			if (std::abs(line->dir.dot(normals[index1])) > 0.1f) continue;
@@ -73,7 +83,6 @@ void LineDetector::detect(std::vector<Point>& polygon, int num_iter, int min_poi
 			positions.push_back(0);
 			int num_points = 0;
 			int prev = 0;
-			line->start_index = std::numeric_limits<int>::max();
 			for (int i = 0; i < N && i - prev < cluster_epsilon; i++) {
 				int idx = (index1 + i) % N;
 				if (polygon[idx].used) break;
@@ -81,7 +90,8 @@ void LineDetector::detect(std::vector<Point>& polygon, int num_iter, int min_poi
 					num_points++;
 					prev = i;
 					positions.push_back((polygon[idx].pos - polygon[index1].pos).dot(line->dir));
-					line->start_index = std::min(line->start_index, idx);
+					line->end_index = index1 + i;
+					line->end_point = polygon[index1].pos + line->dir * (polygon[idx].pos - polygon[index1].pos).dot(line->dir);
 				}
 			}
 			prev = 0;
@@ -92,7 +102,8 @@ void LineDetector::detect(std::vector<Point>& polygon, int num_iter, int min_poi
 					num_points++;
 					prev = i;
 					positions.push_back((polygon[idx].pos - polygon[index1].pos).dot(line->dir));
-					line->start_index = std::min(line->start_index, idx);
+					line->start_index = index1 - i;
+					line->start_point = polygon[index1].pos + line->dir * (polygon[idx].pos - polygon[index1].pos).dot(line->dir);
 				}
 			}
 
@@ -141,6 +152,6 @@ void LineDetector::detect(std::vector<Point>& polygon, int num_iter, int min_poi
 			if (polygon[unused_list[i]].used) unused_list.erase(unused_list.begin() + i);
 		}
 
-		lines.push_back(best_line);
+		lines.push_back({ best_line->start_index, best_line });
 	}
 }

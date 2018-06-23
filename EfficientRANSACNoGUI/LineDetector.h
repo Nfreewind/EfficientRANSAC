@@ -23,8 +23,8 @@ public:
 	float length;
 
 public:
-	Line() {}
-	Line(const cv::Point2f& point, const cv::Point2f& dir) : point(point), dir(dir / cv::norm(dir)) {}
+	Line();
+	Line(int index, const cv::Point2f& point, const cv::Point2f& dir);
 	~Line() {}
 
 	float distance(const cv::Point2f& p) {
@@ -47,6 +47,6 @@ protected:
 	LineDetector() {}
 
 public:
-	static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, std::vector<std::shared_ptr<PrimitiveShape>>& lines);
+	static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error, float cluster_epsilon, float min_length, std::vector<float>& principal_angles, float angle_threshold, std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>& lines);
 };
 

@@ -22,9 +22,12 @@ public:
 	/** Angle range */
 	float angle_range;
 
+	/** Signed angle range */
+	float signed_angle_range;
+
 public:
-	Circle() : center(0, 0), radius(0) {}
-	Circle(const cv::Point2f& center, float radius) : center(center), radius(radius) {}
+	Circle();
+	Circle(int index, const cv::Point2f& point, const cv::Point2f& center, float radius);
 	~Circle() {}
 
 	float distance(const cv::Point2f& p) {
@@ -62,6 +65,20 @@ public:
 			end_angle = start_angle + CV_PI * 2;
 			angle_range = CV_PI * 2;
 		}
+
+		// swap start_angle and end_angle accroding to the start_point and end_point
+		cv::Point2f p1 = center + radius * cv::Point2f(std::cos(start_angle), std::sin(start_angle));
+		cv::Point2f p2 = center + radius * cv::Point2f(std::cos(end_angle), std::sin(end_angle));
+		if (cv::norm(start_point - p1) > cv::norm(start_point - p2)) {
+			std::swap(start_angle, end_angle);
+		}
+
+		if (start_angle < end_angle) {
+			signed_angle_range = angle_range;
+		}
+		else {
+			signed_angle_range = -angle_range;
+		}
 	}
 };
 
@@ -70,8 +87,8 @@ protected:
 	CurveDetector() {}
 	
 public:
-	static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius, std::vector<std::shared_ptr<PrimitiveShape>>& circles);
-	static std::shared_ptr<Circle> circleFromPoints(const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& p3);
+	static void detect(std::vector<Point>& polygon, int num_iter, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius, std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>& circles);
+	static std::shared_ptr<Circle> circleFromPoints(int index, const cv::Point2f& p1, const cv::Point2f& p2, const cv::Point2f& p3);
 	static float crossProduct(const cv::Point2f& a, const cv::Point2f& b);
 };
 

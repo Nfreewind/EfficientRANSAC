@@ -19,6 +19,7 @@ void Canvas::loadImage(const QString& filename) {
 
 	polygons.clear();
 	shapes.clear();
+	contours.clear();
 
 	update();
 }
@@ -30,6 +31,7 @@ void Canvas::saveImage(const QString& filename) {
 void Canvas::detectContours() {
 	polygons.clear();
 	shapes.clear();
+	contours.clear();
 
 	if (orig_image.isNull()) return;
 
@@ -41,12 +43,11 @@ void Canvas::detectCurves(int num_iterations, int min_points, float max_error_ra
 	detectContours();
 
 	// detect circles
+	shapes.resize(polygons.size());
 	for (int i = 0; i < polygons.size(); i++) {
-		std::vector<std::shared_ptr<PrimitiveShape>> results;
 		if (polygons[i].contour.size() >= 100) {
-			CurveDetector::detect(polygons[i].contour, num_iterations, min_points, max_error_ratio_to_radius, cluster_epsilon, min_angle, min_radius, max_radius, results);
+			CurveDetector::detect(polygons[i].contour, num_iterations, min_points, max_error_ratio_to_radius, cluster_epsilon, min_angle, min_radius, max_radius, shapes[i]);
 		}
-		shapes.push_back(results);
 	}
 }
 
@@ -70,12 +71,11 @@ void Canvas::detectLines(int num_iterations, int min_points, float max_error, fl
 	}
 
 	// detect lines based on the principal orientations
+	shapes.resize(polygons.size());
 	for (int i = 0; i < polygons.size(); i++) {
-		std::vector<std::shared_ptr<PrimitiveShape>> results;
 		if (polygons[i].contour.size() >= 100) {
-			LineDetector::detect(polygons[i].contour, num_iterations, min_points, max_error, cluster_epsilon, min_length, principal_orientations, angle_threshold, results);
+			LineDetector::detect(polygons[i].contour, num_iterations, min_points, max_error, cluster_epsilon, min_length, principal_orientations, angle_threshold, shapes[i]);
 		}
-		shapes.push_back(results);
 	}
 }
 
@@ -83,12 +83,11 @@ void Canvas::detectCurvesLines(int curve_num_iterations, int curve_min_points, f
 	detectContours();
 
 	// detect circles
+	shapes.resize(polygons.size());
 	for (int i = 0; i < polygons.size(); i++) {
-		std::vector<std::shared_ptr<PrimitiveShape>> results;
 		if (polygons[i].contour.size() >= 100) {
-			CurveDetector::detect(polygons[i].contour, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, results);
+			CurveDetector::detect(polygons[i].contour, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, shapes[i]);
 		}
-		shapes.push_back(results);
 	}
 
 	// detect principal orientation
@@ -110,15 +109,36 @@ void Canvas::detectCurvesLines(int curve_num_iterations, int curve_min_points, f
 
 	// detect lines based on the principal orientations
 	for (int i = 0; i < polygons.size(); i++) {
-		std::vector<std::shared_ptr<PrimitiveShape>> results;
 		if (polygons[i].contour.size() >= 100) {
+			std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>> results;
 			LineDetector::detect(polygons[i].contour, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, principal_orientations, line_angle_threshold, results);
+			shapes[i].insert(shapes[i].end(), results.begin(), results.end());
 		}
-		shapes.push_back(results);
 	}
 }
 
 void Canvas::generateContours() {
+	contours.resize(shapes.size());
+
+	for (int i = 0; i < shapes.size(); i++) {
+		std::sort(shapes[i].begin(), shapes[i].end());
+
+		for (int j = 0; j < shapes[i].size(); j++) {
+			if (Circle* circle = dynamic_cast<Circle*>(shapes[i][j].second.get())) {
+				int num = circle->angle_range / CV_PI * 180 / 10;
+				contours[i].push_back(circle->start_point);
+				for (int k = 1; k < num; k++) {
+					float angle = circle->start_angle + circle->signed_angle_range / num * k;
+					contours[i].push_back(circle->center + circle->radius * cv::Point2f(std::cos(angle), std::sin(angle)));
+				}
+				contours[i].push_back(circle->end_point);
+			}
+			else if (Line* line = dynamic_cast<Line*>(shapes[i][j].second.get())) {
+				contours[i].push_back(line->start_point);
+				contours[i].push_back(line->end_point);
+			}
+		}
+	}
 }
 
 void Canvas::keyPressEvent(QKeyEvent* e) {
@@ -181,16 +201,17 @@ void Canvas::paintEvent(QPaintEvent *event) {
 
 			for (auto& list : shapes) {
 				for (auto& shape : list) {
-					if (Circle* circle = dynamic_cast<Circle*>(shape.get())) {
+					if (Circle* circle = dynamic_cast<Circle*>(shape.second.get())) {
 						painter.setPen(QPen(QColor(255, 192, 192), 1));
 						for (int i = 0; i < circle->points.size(); i++) {
 							painter.drawRect(circle->points[i].x * image_scale - 1, circle->points[i].y * image_scale - 1, 2, 2);
 						}
 
 						painter.setPen(QPen(QColor(255, 0, 0), 3));
-						painter.drawArc((circle->center.x - circle->radius) * image_scale, (circle->center.y - circle->radius) * image_scale, circle->radius * 2 * image_scale, circle->radius * 2 * image_scale, -circle->start_angle / CV_PI * 180 * 16, -circle->angle_range / CV_PI * 180 * 16);
+						float start_angle = std::min(circle->start_angle, circle->end_angle);
+						painter.drawArc((circle->center.x - circle->radius) * image_scale, (circle->center.y - circle->radius) * image_scale, circle->radius * 2 * image_scale, circle->radius * 2 * image_scale, -start_angle / CV_PI * 180 * 16, -circle->angle_range / CV_PI * 180 * 16);
 					}
-					else if (Line* line = dynamic_cast<Line*>(shape.get())) {
+					else if (Line* line = dynamic_cast<Line*>(shape.second.get())) {
 						painter.setPen(QPen(QColor(192, 192, 255), 1));
 						for (int i = 0; i < line->points.size(); i++) {
 							painter.drawRect(line->points[i].x * image_scale - 1, line->points[i].y * image_scale - 1, 2, 2);
@@ -202,6 +223,15 @@ void Canvas::paintEvent(QPaintEvent *event) {
 						painter.drawLine(p1.x * image_scale, p1.y * image_scale, p2.x * image_scale, p2.y * image_scale);
 					}
 				}
+			}
+
+			for (auto& contour : contours) {
+				painter.setPen(QPen(QColor(0, 128, 0), 3));
+				QPolygon pol;
+				for (int i = 0; i < contour.size(); i++) {
+					pol.push_back(QPoint(contour[i].x * image_scale, contour[i].y * image_scale));
+				}
+				painter.drawPolygon(pol);
 			}
 		}
 	}

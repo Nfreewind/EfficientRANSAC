@@ -19,7 +19,8 @@ private:
 	QImage image;
 	float image_scale;
 	std::vector<Polygon> polygons;
-	std::vector<std::vector<std::shared_ptr<PrimitiveShape>>> shapes;
+	std::vector<std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>>> shapes;
+	std::vector<std::vector<cv::Point2f>> contours;
 
 	bool ctrlPressed;
 	bool shiftPressed;

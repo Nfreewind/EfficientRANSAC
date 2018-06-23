@@ -9,8 +9,17 @@ public:
 	/** Supporting points */
 	std::vector<cv::Point2f> points;
 
-	/** Start index point */
+	/** Start point index */
 	int start_index;
+
+	/** Start point */
+	cv::Point2f start_point;
+
+	/** End point index */
+	int end_index;
+
+	/** End point */
+	cv::Point2f end_point;
 
 public:
 	PrimitiveShape() {}
