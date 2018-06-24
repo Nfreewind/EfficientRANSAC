@@ -3,7 +3,7 @@
 LineOptionDialog::LineOptionDialog(QWidget *parent) : QDialog(parent) {
 	ui.setupUi(this);
 
-	ui.lineEditNumIterations->setText("10000");
+	ui.lineEditNumIterations->setText("20000");
 	ui.lineEditMinPoints->setText("30");
 	ui.lineEditMaxError->setText("5");
 	ui.lineEditClusterEpsilon->setText("20");

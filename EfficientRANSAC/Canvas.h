@@ -9,6 +9,7 @@
 #include "../EfficientRANSACNoGUI/MeanShift.h"
 #include "../EfficientRANSACNoGUI/OrientationEstimator.h"
 #include "../EfficientRANSACNoGUI/PrimitiveShape.h"
+#include "../EfficientRANSACNoGUI/ContourGenerator.h"
 
 class Canvas : public QWidget {
 private:
@@ -34,7 +35,7 @@ public:
 	void detectCurves(int num_iterations, int min_points, float max_error_ratio_to_radius, float cluster_epsilon, float min_angle, float min_radius, float max_radius);
 	void detectLines(int num_iterations, int min_points, float max_error, float cluster_epsilon, float min_length, float angle_threshold);
 	void detectCurvesLines(int curve_num_iterations, int curve_min_points, float curve_max_error_ratio_to_radius, float curve_cluster_epsilon, float curve_min_angle, float curve_min_radius, float curve_max_radius, int line_num_iterations, int line_min_points, float line_max_error, float line_cluster_epsilon, float line_min_length, float line_angle_threshold);
-	void generateContours();
+	void generateContours(int curve_num_iterations, int curve_min_points, float curve_max_error_ratio_to_radius, float curve_cluster_epsilon, float curve_min_angle, float curve_min_radius, float curve_max_radius, int line_num_iterations, int line_min_points, float line_max_error, float line_cluster_epsilon, float line_min_length, float line_angle_threshold, float contour_max_error, float contour_angle_threshold);
 	void keyPressEvent(QKeyEvent* e);
 	void keyReleaseEvent(QKeyEvent* e);
 

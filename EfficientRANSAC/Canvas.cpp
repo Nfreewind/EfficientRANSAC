@@ -117,27 +117,48 @@ void Canvas::detectCurvesLines(int curve_num_iterations, int curve_min_points, f
 	}
 }
 
-void Canvas::generateContours() {
-	contours.resize(shapes.size());
+void Canvas::generateContours(int curve_num_iterations, int curve_min_points, float curve_max_error_ratio_to_radius, float curve_cluster_epsilon, float curve_min_angle, float curve_min_radius, float curve_max_radius, int line_num_iterations, int line_min_points, float line_max_error, float line_cluster_epsilon, float line_min_length, float line_angle_threshold, float contour_max_error, float contour_angle_threshold) {
+	detectContours();
 
+	// detect circles
+	shapes.resize(polygons.size());
+	for (int i = 0; i < polygons.size(); i++) {
+		if (polygons[i].contour.size() >= 100) {
+			CurveDetector::detect(polygons[i].contour, curve_num_iterations, curve_min_points, curve_max_error_ratio_to_radius, curve_cluster_epsilon, curve_min_angle, curve_min_radius, curve_max_radius, shapes[i]);
+		}
+	}
+
+	// detect principal orientation
+	std::vector<std::vector<cv::Point2f>> pgons;
+	for (auto& polygon : polygons) {
+		if (polygon.contour.size() < 100) continue;
+
+		std::vector<cv::Point2f> pgon;
+		for (auto& pt : polygon.contour) pgon.push_back(pt.pos);
+		pgons.push_back(pgon);
+	}
+	float principal_orientation = OrientationEstimator::estimate(pgons);
+
+	// use the principal orientation, +45, +90, +135 degrees as principal orientations
+	std::vector<float> principal_orientations;
+	for (int i = 0; i < 4; i++) {
+		principal_orientations.push_back(principal_orientation + CV_PI * i / 4);
+	}
+
+	// detect lines based on the principal orientations
+	for (int i = 0; i < polygons.size(); i++) {
+		if (polygons[i].contour.size() >= 100) {
+			std::vector<std::pair<int, std::shared_ptr<PrimitiveShape>>> results;
+			LineDetector::detect(polygons[i].contour, line_num_iterations, line_min_points, line_max_error, line_cluster_epsilon, line_min_length, principal_orientations, line_angle_threshold, results);
+			shapes[i].insert(shapes[i].end(), results.begin(), results.end());
+		}
+	}
+
+	// generate contours
+	contours.resize(shapes.size());
 	for (int i = 0; i < shapes.size(); i++) {
 		std::sort(shapes[i].begin(), shapes[i].end());
-
-		for (int j = 0; j < shapes[i].size(); j++) {
-			if (Circle* circle = dynamic_cast<Circle*>(shapes[i][j].second.get())) {
-				int num = circle->angle_range / CV_PI * 180 / 10;
-				contours[i].push_back(circle->start_point);
-				for (int k = 1; k < num; k++) {
-					float angle = circle->start_angle + circle->signed_angle_range / num * k;
-					contours[i].push_back(circle->center + circle->radius * cv::Point2f(std::cos(angle), std::sin(angle)));
-				}
-				contours[i].push_back(circle->end_point);
-			}
-			else if (Line* line = dynamic_cast<Line*>(shapes[i][j].second.get())) {
-				contours[i].push_back(line->start_point);
-				contours[i].push_back(line->end_point);
-			}
-		}
+		ContourGenerator::generate(polygons[i], shapes[i], contours[i], contour_max_error, contour_angle_threshold);
 	}
 }
 
@@ -180,7 +201,7 @@ void Canvas::paintEvent(QPaintEvent *event) {
 		if (polygons.size() == 0) {
 			painter.drawImage(0, 0, image);
 		}
-		else {
+		else if (contours.size() == 0) {
 			painter.fillRect(0, 0, width(), height(), QColor(255, 255, 255));
 
 			painter.setPen(QPen(QColor(0, 0, 0), 1));
@@ -224,9 +245,28 @@ void Canvas::paintEvent(QPaintEvent *event) {
 					}
 				}
 			}
+		}
+		else {
+			painter.fillRect(0, 0, width(), height(), QColor(255, 255, 255));
+
+			painter.setPen(QPen(QColor(0, 0, 0), 1));
+			for (auto& polygon : polygons) {
+				QPolygon pgon;
+				for (auto& p : polygon.contour) {
+					pgon.push_back(QPoint(p.pos.x * image_scale, p.pos.y * image_scale));
+				}
+				painter.drawPolygon(pgon);
+				for (auto& hole : polygon.holes) {
+					QPolygon pgon;
+					for (auto& p : hole) {
+						pgon.push_back(QPoint(p.pos.x * image_scale, p.pos.y * image_scale));
+					}
+					painter.drawPolygon(pgon);
+				}
+			}
 
 			for (auto& contour : contours) {
-				painter.setPen(QPen(QColor(0, 128, 0), 3));
+				painter.setPen(QPen(QColor(0, 0, 255), 3));
 				QPolygon pol;
 				for (int i = 0; i < contour.size(); i++) {
 					pol.push_back(QPoint(contour[i].x * image_scale, contour[i].y * image_scale));

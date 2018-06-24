@@ -3,6 +3,7 @@
 #include "CurveOptionDialog.h"
 #include "LineOptionDialog.h"
 #include "CurveLineOptionDialog.h"
+#include "ContourOptionDialog.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 	ui.setupUi(this);
@@ -65,6 +66,9 @@ void MainWindow::onDetectCurvesLines() {
 }
 
 void MainWindow::onGenerateContours() {
-	canvas.generateContours();
-	canvas.update();
+	ContourOptionDialog dlg;
+	if (dlg.exec()) {
+		canvas.generateContours(dlg.getCurveNumIterations(), dlg.getCurveMinPoints(), dlg.getCurveMaxErrorRatioToRadius(), dlg.getCurveClusterEpsilon(), dlg.getCurveMinAngle() / 180.0 * CV_PI, dlg.getCurveMinRadius(), dlg.getCurveMaxRadius(), dlg.getLineNumIterations(), dlg.getLineMinPoints(), dlg.getLineMaxError(), dlg.getLineClusterEpsilon(), dlg.getLineMinLength(), dlg.getAngleThreshold() / 180.0 * CV_PI, dlg.getContourMaxError(), dlg.getContourAngleThreshold() / 180.0 * CV_PI);
+		canvas.update();
+	}
 }

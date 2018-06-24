@@ -112,6 +112,7 @@
     </QtRcc>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\EfficientRANSACNoGUI\ContourGenerator.cpp" />
     <ClCompile Include="..\EfficientRANSACNoGUI\CurveDetector.cpp" />
     <ClCompile Include="..\EfficientRANSACNoGUI\LineDetector.cpp" />
     <ClCompile Include="..\EfficientRANSACNoGUI\MeanShift.cpp" />
@@ -119,6 +120,7 @@
     <ClCompile Include="..\EfficientRANSACNoGUI\PrimitiveShape.cpp" />
     <ClCompile Include="..\EfficientRANSACNoGUI\Util.cpp" />
     <ClCompile Include="Canvas.cpp" />
+    <ClCompile Include="ContourOptionDialog.cpp" />
     <ClCompile Include="CurveLineOptionDialog.cpp" />
     <ClCompile Include="LineOptionDialog.cpp" />
     <ClCompile Include="main.cpp" />
@@ -129,6 +131,7 @@
     <QtMoc Include="MainWindow.h" />
   </ItemGroup>
   <ItemGroup>
+    <QtUic Include="ContourOptionDialog.ui" />
     <QtUic Include="CurveLineOptionDialog.ui" />
     <QtUic Include="LineOptionDialog.ui" />
     <QtUic Include="MainWindow.ui" />
@@ -138,6 +141,7 @@
     <QtRcc Include="MainWindow.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\EfficientRANSACNoGUI\ContourGenerator.h" />
     <ClInclude Include="..\EfficientRANSACNoGUI\CurveDetector.h" />
     <ClInclude Include="..\EfficientRANSACNoGUI\LineDetector.h" />
     <ClInclude Include="..\EfficientRANSACNoGUI\MeanShift.h" />
@@ -145,6 +149,12 @@
     <ClInclude Include="..\EfficientRANSACNoGUI\PrimitiveShape.h" />
     <ClInclude Include="..\EfficientRANSACNoGUI\Util.h" />
     <ClInclude Include="Canvas.h" />
+    <QtMoc Include="ContourOptionDialog.h">
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;.\..\opencv3.4\include</IncludePath>
+      <Define Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UNICODE;WIN32;WIN64;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB</Define>
+      <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;.\..\opencv3.4\include</IncludePath>
+      <Define Condition="'$(Configuration)|$(Platform)'=='Release|x64'">UNICODE;WIN32;WIN64;QT_DLL;QT_NO_DEBUG;NDEBUG;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB</Define>
+    </QtMoc>
     <QtMoc Include="CurveLineOptionDialog.h">
       <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\GeneratedFiles;.;$(QTDIR)\include;.\GeneratedFiles\$(ConfigurationName)\.;$(QTDIR)\include\QtCore;$(QTDIR)\include\QtGui;$(QTDIR)\include\QtANGLE;$(QTDIR)\include\QtWidgets;.\..\opencv3.4\include</IncludePath>
       <Define Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">UNICODE;WIN32;WIN64;QT_DLL;QT_CORE_LIB;QT_GUI_LIB;QT_WIDGETS_LIB</Define>

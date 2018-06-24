@@ -1,9 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 #include "PrimitiveShape.h"
 #include "Util.h"
-#include <memory>
 
 class Line : public PrimitiveShape {
 public:
